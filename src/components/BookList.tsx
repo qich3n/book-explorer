@@ -10,6 +10,7 @@ interface Book {
   author_name?: string[];
   first_publish_year?: number;
   cover_i?: number;
+  bookkey: string;
 }
 
 interface BookListProps {
@@ -25,6 +26,7 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
   const [hasMore, setHasMore] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
 
+  // Improved fetch function with better error handling
   const fetchBooks = async (pageNum: number, isLoadMore = false) => {
     if (!searchQuery.trim()) return;
 
@@ -32,22 +34,26 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
     setError(null);
 
     try {
-      // Basic search without sorting
-      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchQuery)}&page=${pageNum}&limit=20`;
-      console.log('Fetching from:', url);
+      const url = new URL('https://openlibrary.org/search.json');
+      url.searchParams.append('q', searchQuery.trim());
+      url.searchParams.append('page', pageNum.toString());
+      url.searchParams.append('limit', '20');
+      url.searchParams.append('fields', 'key,title,author_name,first_publish_year,cover_i');
 
-      const response = await fetch(url);
+      const response = await fetch(url.toString());
 
-      if (!response.ok) throw new Error('Failed to fetch books');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
-      
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newBooks = data.docs.map((book: any) => ({
         key: book.key,
         title: book.title || 'Unknown Title',
         author_name: book.author_name || ['Unknown Author'],
-        first_publish_year: book.first_publish_year || 0,
+        first_publish_year: book.first_publish_year || null,
         cover_i: book.cover_i,
       }));
 
@@ -56,39 +62,51 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
       setHasMore(newBooks.length === 20 && (pageNum * 20) < data.numFound);
     } catch (err) {
       console.error('Error fetching books:', err);
-      setError('Failed to fetch books. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to fetch books. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Reset and fetch when search query changes
+  // Improved sorting algorithm with stable sort and better type handling
+  const sortedBooks = useMemo(() => {
+    const sorted = [...books];
+
+    const compareStrings = (a: string, b: string) =>
+      a.localeCompare(b, undefined, { sensitivity: 'base' });
+
+    const compareYears = (a: number | null, b: number | null) => {
+      if (a === null && b === null) return 0;
+      if (a === null) return 1;
+      if (b === null) return -1;
+      return a - b;
+    };
+
+    switch (sortOption) {
+      case 'new':
+        return sorted.sort((a, b) => {
+          const yearComparison = compareYears(b.first_publish_year ?? null, a.first_publish_year ?? null);
+          return yearComparison !== 0 ? yearComparison : compareStrings(a.title, b.title);
+        });
+      case 'old':
+        return sorted.sort((a, b) => {
+          const yearComparison = compareYears(a.first_publish_year ?? null, b.first_publish_year ?? null);
+          return yearComparison !== 0 ? yearComparison : compareStrings(a.title, b.title);
+        });
+      case 'title':
+        return sorted.sort((a, b) => {
+          const titleComparison = compareStrings(a.title, b.title);
+          return titleComparison !== 0 ? titleComparison : (b.first_publish_year ?? 0) - (a.first_publish_year ?? 0);
+        });
+      default:
+        return books; // Keep original relevance order
+    }
+  }, [books, sortOption]);
+
   useEffect(() => {
     setPage(1);
     fetchBooks(1);
   }, [searchQuery]);
-
-  // Sort books client-side
-  const sortedBooks = useMemo(() => {
-    const sorted = [...books];
-    
-    switch (sortOption) {
-      case 'new':
-        sorted.sort((a, b) => (b.first_publish_year || 0) - (a.first_publish_year || 0));
-        break;
-      case 'old':
-        sorted.sort((a, b) => (a.first_publish_year || 0) - (b.first_publish_year || 0));
-        break;
-      case 'title':
-        sorted.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      default:
-        // Keep original order for relevance
-        return books;
-    }
-    
-    return sorted;
-  }, [books, sortOption]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -97,11 +115,11 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
   };
 
   if (error) return (
-    <div className="text-center">
-      <p className="text-red-500 mb-4">{error}</p>
-      <button 
+    <div className="text-center py-8">
+      <p className="text-red-600 mb-4">{error}</p>
+      <button
         onClick={() => fetchBooks(page)}
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         Try Again
       </button>
@@ -109,28 +127,32 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
   );
 
   if (!searchQuery) return (
-    <div className="text-center text-gray-500">
-      <p className="mb-4">Enter a search term to find books</p>
-      <p className="text-sm">Try searching for your favorite author or book title</p>
+    <div className="text-center py-12">
+      <h2 className="text-2xl text-gray-900 font-semibold mb-4">Welcome to Book Explorer</h2>
+      <p className="text-gray-700 mb-2">Enter a search term to discover books</p>
+      <p className="text-gray-600 text-sm">Try searching by title, author, or subject</p>
     </div>
   );
 
   return (
     <div className="space-y-6">
       {sortedBooks.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <p className="text-gray-600">
-            Showing {sortedBooks.length} of {totalResults.toLocaleString()} results
-          </p>
-          {sortOption !== 'relevance' && (
-            <p className="text-gray-600">
-              Sorted by: {
-                sortOption === 'new' ? 'Newest First' : 
-                sortOption === 'old' ? 'Oldest First' : 
-                'Title A-Z'
-              }
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <p className="text-gray-900">
+              Showing <span className="font-semibold">{sortedBooks.length}</span> of{' '}
+              <span className="font-semibold">{totalResults.toLocaleString()}</span> results
             </p>
-          )}
+            {sortOption !== 'relevance' && (
+              <p className="text-gray-900">
+                Sorted by: <span className="font-medium">
+                  {sortOption === 'new' ? 'Newest First' :
+                    sortOption === 'old' ? 'Oldest First' :
+                      'Title A-Z'}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -138,33 +160,43 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
         {sortedBooks.map((book) => (
           <BookCard
             key={book.key}
+            bookKey={book.key} // Changed from 'key' to 'bookKey'
             title={book.title}
             author={book.author_name}
-            year={book.first_publish_year}
+            year={book.first_publish_year ?? undefined}
             coverId={book.cover_i}
           />
         ))}
       </div>
-      
-      {loading && <LoadingSpinner />}
-      
+
+      {loading && (
+        <div className="py-8">
+          <LoadingSpinner />
+        </div>
+      )}
+
       {!loading && hasMore && books.length > 0 && (
         <div className="flex justify-center mt-8">
           <button
             onClick={handleLoadMore}
-            className="px-6 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Load More
+            Load More Books
           </button>
         </div>
       )}
-      
+
       {!loading && !hasMore && books.length > 0 && (
-        <p className="text-center text-gray-500 mt-8">No more books to load</p>
+        <p className="text-center text-gray-700 mt-8 py-4 border-t border-gray-200">
+          You&apos;ve reached the end of the results
+        </p>
       )}
 
       {!loading && books.length === 0 && (
-        <p className="text-center text-gray-500">No books found for &quot;{searchQuery}&quot;</p>
+        <div className="text-center py-12">
+          <p className="text-gray-900 mb-2">No books found for &quot;{searchQuery}&quot;</p>
+          <p className="text-gray-600">Try adjusting your search terms</p>
+        </div>
       )}
     </div>
   );
