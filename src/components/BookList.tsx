@@ -64,7 +64,9 @@ export default function BookList({ searchQuery }: BookListProps) {
   if (loading) return <LoadingSpinner />;
   if (error) return <p className="text-red-500">{error}</p>;
   if (!searchQuery) return <p className="text-center text-gray-500">Enter a search term to find books</p>;
-  if (books.length === 0) return <p className="text-center text-gray-500">No books found for "{searchQuery}"</p>;
+  if (books.length === 0) return <p className="text-center text-gray-500">No books found for &quot;{searchQuery}&quot;</p>;
+
+
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
