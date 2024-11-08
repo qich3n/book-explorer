@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Share2, Heart, BookOpen, ShoppingCart } from 'lucide-react';
 
 interface BookCardProps {
   title: string;
   author?: string[];
   year?: number;
   coverId?: number;
-  bookKey: string; // Changed from 'key' to 'bookKey'
+  bookKey: string;
 }
 
 interface BookDetails {
@@ -13,13 +14,38 @@ interface BookDetails {
   subjects?: string[];
   firstSentence?: string;
   publishPlaces?: string[];
+  isbn?: string[];
+  pageCount?: number;
+  publishers?: string[];
   loading: boolean;
   error: boolean;
 }
 
+interface BookPurchaseLinks {
+  amazon: string;
+  bookshop: string;
+  openLibrary: string;
+  goodreads: string;
+}
+
+const generatePurchaseLinks = (title: string, author?: string[], isbn?: string): BookPurchaseLinks => {
+  const searchQuery = `${title} ${author?.[0] || ''}`.trim();
+  const encodedQuery = encodeURIComponent(searchQuery);
+  const isbnQuery = isbn ? `&isbn=${isbn}` : '';
+  
+  return {
+    amazon: `https://www.amazon.com/s?k=${encodedQuery}${isbnQuery}&i=stripbooks`,
+    bookshop: `https://bookshop.org/search?keywords=${encodedQuery}`,
+    openLibrary: `https://openlibrary.org/search?q=${encodedQuery}`,
+    goodreads: `https://www.goodreads.com/search?q=${encodedQuery}`
+  };
+};
+
 export default function BookCard({ title, author, year, coverId, bookKey }: BookCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [details, setDetails] = useState<BookDetails>({
     loading: false,
     error: false
@@ -39,12 +65,22 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
         if (!response.ok) throw new Error('Failed to fetch book details');
         
         const data = await response.json();
+
+        // Fetch edition details for ISBN and additional info
+        const editionsResponse = await fetch(`https://openlibrary.org/works/${workId}/editions.json`);
+        const editionsData = await editionsResponse.json();
+        
+        const firstEdition = editionsData.entries?.[0] || {};
+
         setDetails({
           description: typeof data.description === 'object' ? 
             data.description.value : data.description,
           subjects: data.subjects,
           firstSentence: data.first_sentence?.value,
           publishPlaces: data.publish_places,
+          isbn: firstEdition.isbn_13 || firstEdition.isbn_10,
+          pageCount: firstEdition.number_of_pages,
+          publishers: firstEdition.publishers,
           loading: false,
           error: false
         });
@@ -57,23 +93,37 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
     fetchBookDetails();
   }, [isExpanded, workId, details.description]);
 
+  const handleShare = async () => {
+    const shareUrl = `https://openlibrary.org${bookKey}`;
+    const shareText = `Check out "${title}" by ${author?.[0] || 'Unknown Author'}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+        // Fallback to showing share menu
+        setShowShareMenu(true);
+      }
+    } else {
+      setShowShareMenu(true);
+    }
+  };
+
+  const copyToClipboard = () => {
+    const shareUrl = `https://openlibrary.org${bookKey}`;
+    navigator.clipboard.writeText(shareUrl);
+    // You could add a toast notification here
+  };
+
   const FallbackCover = () => (
     <div className="absolute inset-0 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
-      <div className="text-center">
-        <svg
-          className="w-16 h-16 text-gray-400 mx-auto mb-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-          />
-        </svg>
+      <div className="text-center p-4">
+        <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-2" />
         <p className="text-gray-500 text-sm">No cover available</p>
       </div>
     </div>
@@ -83,20 +133,47 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
     ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`
     : '';
 
+  const purchaseLinks = generatePurchaseLinks(title, author, details.isbn?.[0]);
+
   return (
     <div className="group bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200">
-      <div className="aspect-[2/3] relative overflow-hidden bg-gray-50">
-        {!imageError && coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={`Cover of ${title}`}
-            className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <FallbackCover />
-        )}
+      <div className="relative">
+        <div className="aspect-[2/3] relative overflow-hidden bg-gray-50">
+          {!imageError && coverUrl ? (
+            <img
+              src={coverUrl}
+              alt={`Cover of ${title}`}
+              className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <FallbackCover />
+          )}
+        </div>
+        
+        {/* Action buttons */}
+        <div className="absolute top-2 right-2 flex flex-col gap-2">
+          <button
+            onClick={() => setIsFavorited(!isFavorited)}
+            className={`p-2 rounded-full backdrop-blur-sm transition-all ${
+              isFavorited 
+                ? 'bg-red-500 text-white' 
+                : 'bg-white/70 text-gray-600 hover:bg-white'
+            }`}
+            title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
+          </button>
+          <button
+            onClick={handleShare}
+            className="p-2 rounded-full bg-white/70 text-gray-600 hover:bg-white backdrop-blur-sm transition-all"
+            title="Share book"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
+
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
           {title}
@@ -111,10 +188,39 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
             Published: {year}
           </p>
         )}
+
+        {/* Purchase Links */}
+        <div className="flex flex-wrap gap-2 mt-3">
+          <a
+            href={purchaseLinks.amazon}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm bg-orange-100 text-orange-600 px-3 py-1 rounded-full hover:bg-orange-200 transition-colors"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Amazon
+          </a>
+          <a
+            href={purchaseLinks.bookshop}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm bg-green-100 text-green-600 px-3 py-1 rounded-full hover:bg-green-200 transition-colors"
+          >
+            Bookshop
+          </a>
+          <a
+            href={purchaseLinks.goodreads}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm bg-brown-100 text-amber-700 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors"
+          >
+            Goodreads
+          </a>
+        </div>
         
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-blue-500 hover:text-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-2 py-1 -ml-2 transition-colors"
+          className="mt-3 text-blue-500 hover:text-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-2 py-1 -ml-2 transition-colors"
         >
           {isExpanded ? 'Show Less' : 'Show More'}
         </button>
@@ -135,9 +241,21 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
 
             {details.firstSentence && (
               <div className="space-y-1">
-                <h4 className="font-medium text-gray-900 text-sm">First Sentence:</h4>
+                <h4 className="font-medium text-gray-900 text-sm">Opening Line:</h4>
                 <p className="text-gray-700 text-sm italic">&quot;{details.firstSentence}&quot;</p>
               </div>
+            )}
+            
+            {details.pageCount && (
+              <p className="text-gray-700 text-sm">
+                Pages: {details.pageCount}
+              </p>
+            )}
+
+            {details.publishers && details.publishers.length > 0 && (
+              <p className="text-gray-700 text-sm">
+                Publisher: {details.publishers[0]}
+              </p>
             )}
             
             {details.description && (
@@ -164,7 +282,7 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
                   {details.subjects.slice(0, 5).map((subject, index) => (
                     <span
                       key={index}
-                      className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors"
+                      className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors cursor-pointer"
                     >
                       {subject}
                     </span>
@@ -190,6 +308,37 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
           </div>
         )}
       </div>
+
+      {/* Share Menu */}
+      {showShareMenu && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg max-w-sm w-full mx-4">
+            <h4 className="font-semibold mb-4">Share this book</h4>
+            <div className="space-y-2">
+              <button
+                onClick={copyToClipboard}
+                className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded"
+              >
+                Copy link
+              </button>
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${title}" on Book Explorer!`)}&url=${encodeURIComponent(`https://openlibrary.org${bookKey}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full px-4 py-2 text-left hover:bg-gray-100 rounded"
+              >
+                Share on Twitter
+              </a>
+            </div>
+            <button
+              onClick={() => setShowShareMenu(false)}
+              className="mt-4 w-full px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
