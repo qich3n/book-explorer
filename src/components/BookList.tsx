@@ -4,18 +4,23 @@ import { useEffect, useState, useMemo } from 'react';
 import BookCard from './BookCard';
 import LoadingSpinner from './LoadingSpinner';
 
-interface Book {
+export interface Book {
   key: string;
   title: string;
   author_name?: string[];
-  first_publish_year?: number;
+  first_publish_year?: number | null;
   cover_i?: number;
-  bookkey: string;
 }
 
 interface BookListProps {
   searchQuery: string;
   sortOption: string;
+}
+
+interface APIResponse {
+  docs: Book[];
+  numFound: number;
+  start: number;
 }
 
 export default function BookList({ searchQuery, sortOption }: BookListProps) {
@@ -26,7 +31,6 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
   const [hasMore, setHasMore] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
 
-  // Improved fetch function with better error handling
   const fetchBooks = async (pageNum: number, isLoadMore = false) => {
     if (!searchQuery.trim()) return;
 
@@ -46,10 +50,9 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newBooks = data.docs.map((book: any) => ({
+      const data: APIResponse = await response.json();
+      
+      const newBooks: Book[] = data.docs.map(book => ({
         key: book.key,
         title: book.title || 'Unknown Title',
         author_name: book.author_name || ['Unknown Author'],
@@ -68,7 +71,6 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
     }
   };
 
-  // Improved sorting algorithm with stable sort and better type handling
   const sortedBooks = useMemo(() => {
     const sorted = [...books];
 
@@ -99,7 +101,7 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
           return titleComparison !== 0 ? titleComparison : (b.first_publish_year ?? 0) - (a.first_publish_year ?? 0);
         });
       default:
-        return books; // Keep original relevance order
+        return books;
     }
   }, [books, sortOption]);
 
@@ -160,7 +162,7 @@ export default function BookList({ searchQuery, sortOption }: BookListProps) {
         {sortedBooks.map((book) => (
           <BookCard
             key={book.key}
-            bookKey={book.key} // Changed from 'key' to 'bookKey'
+            bookKey={book.key}
             title={book.title}
             author={book.author_name}
             year={book.first_publish_year ?? undefined}
