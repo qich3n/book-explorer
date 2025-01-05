@@ -28,53 +28,69 @@ interface BookPurchaseLinks {
   goodreads: string;
 }
 
-const generatePurchaseLinks = (title: string, author?: string[], isbn?: string): BookPurchaseLinks => {
+const generatePurchaseLinks = (
+  title: string,
+  author?: string[],
+  isbn?: string
+): BookPurchaseLinks => {
   const searchQuery = `${title} ${author?.[0] || ''}`.trim();
   const encodedQuery = encodeURIComponent(searchQuery);
   const isbnQuery = isbn ? `&isbn=${isbn}` : '';
-  
+
   return {
     amazon: `https://www.amazon.com/s?k=${encodedQuery}${isbnQuery}&i=stripbooks`,
     bookshop: `https://bookshop.org/search?keywords=${encodedQuery}`,
     openLibrary: `https://openlibrary.org/search?q=${encodedQuery}`,
-    goodreads: `https://www.goodreads.com/search?q=${encodedQuery}`
+    goodreads: `https://www.goodreads.com/search?q=${encodedQuery}`,
   };
 };
 
-export default function BookCard({ title, author, year, coverId, bookKey }: BookCardProps) {
+export default function BookCard({
+  title,
+  author,
+  year,
+  coverId,
+  bookKey,
+}: BookCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [details, setDetails] = useState<BookDetails>({
     loading: false,
-    error: false
+    error: false,
   });
   const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Extract work ID from bookKey
   const workId = bookKey.replace('/works/', '');
 
+  // Fetch additional details when expanded (only once)
   useEffect(() => {
     const fetchBookDetails = async () => {
+      // If not expanded or already have a description, no need to fetch again
       if (!isExpanded || details.description) return;
 
-      setDetails(prev => ({ ...prev, loading: true }));
+      setDetails((prev) => ({ ...prev, loading: true }));
       try {
         const response = await fetch(`https://openlibrary.org/works/${workId}.json`);
         if (!response.ok) throw new Error('Failed to fetch book details');
-        
+
         const data = await response.json();
 
         // Fetch edition details for ISBN and additional info
-        const editionsResponse = await fetch(`https://openlibrary.org/works/${workId}/editions.json`);
+        const editionsResponse = await fetch(
+          `https://openlibrary.org/works/${workId}/editions.json`
+        );
         const editionsData = await editionsResponse.json();
-        
+
         const firstEdition = editionsData.entries?.[0] || {};
 
         setDetails({
-          description: typeof data.description === 'object' ? 
-            data.description.value : data.description,
+          description:
+            typeof data.description === 'object'
+              ? data.description.value
+              : data.description,
           subjects: data.subjects,
           firstSentence: data.first_sentence?.value,
           publishPlaces: data.publish_places,
@@ -82,17 +98,18 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
           pageCount: firstEdition.number_of_pages,
           publishers: firstEdition.publishers,
           loading: false,
-          error: false
+          error: false,
         });
       } catch (err) {
         console.error('Error fetching book details:', err);
-        setDetails(prev => ({ ...prev, loading: false, error: true }));
+        setDetails((prev) => ({ ...prev, loading: false, error: true }));
       }
     };
 
     fetchBookDetails();
   }, [isExpanded, workId, details.description]);
 
+  // Attempt Web Share API; fallback to custom share menu
   const handleShare = async () => {
     const shareUrl = `https://openlibrary.org${bookKey}`;
     const shareText = `Check out "${title}" by ${author?.[0] || 'Unknown Author'}`;
@@ -100,13 +117,12 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
     if (navigator.share) {
       try {
         await navigator.share({
-          title: title,
+          title,
           text: shareText,
           url: shareUrl,
         });
       } catch (err) {
         console.error('Error sharing:', err);
-        // Fallback to showing share menu
         setShowShareMenu(true);
       }
     } else {
@@ -114,12 +130,14 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
     }
   };
 
+  // Copy link to clipboard
   const copyToClipboard = () => {
     const shareUrl = `https://openlibrary.org${bookKey}`;
     navigator.clipboard.writeText(shareUrl);
-    // You could add a toast notification here
+    // Optionally, show a toast here
   };
 
+  // Fallback cover
   const FallbackCover = () => (
     <div className="absolute inset-0 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
       <div className="text-center p-4">
@@ -129,44 +147,55 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
     </div>
   );
 
-  const coverUrl = coverId 
+  // Cover URL
+  const coverUrl = coverId
     ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`
     : '';
 
+  // Purchase links (Amazon, Bookshop, Goodreads, etc.)
   const purchaseLinks = generatePurchaseLinks(title, author, details.isbn?.[0]);
 
   return (
-    <div className="group bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200">
+    <div
+      className="group bg-white rounded-lg border border-gray-200 shadow 
+                 hover:shadow-lg transition-all duration-300 overflow-hidden"
+    >
+      {/* Cover section */}
       <div className="relative">
         <div className="aspect-[2/3] relative overflow-hidden bg-gray-50">
           {!imageError && coverUrl ? (
             <img
               src={coverUrl}
               alt={`Cover of ${title}`}
-              className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+              className="absolute inset-0 w-full h-full object-cover
+                         transform group-hover:scale-105 transition-transform duration-300"
               onError={() => setImageError(true)}
             />
           ) : (
             <FallbackCover />
           )}
         </div>
-        
-        {/* Action buttons */}
+
+        {/* Action buttons (favorite/share) */}
         <div className="absolute top-2 right-2 flex flex-col gap-2">
           <button
             onClick={() => setIsFavorited(!isFavorited)}
-            className={`p-2 rounded-full backdrop-blur-sm transition-all ${
-              isFavorited 
-                ? 'bg-red-500 text-white' 
-                : 'bg-white/70 text-gray-600 hover:bg-white'
-            }`}
+            className={`p-2 rounded-full backdrop-blur-sm transition-all hover:scale-105 
+              ${
+                isFavorited
+                  ? 'bg-red-500 text-white'
+                  : 'bg-white/70 text-gray-600 hover:bg-white'
+              }
+            `}
             title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
           </button>
           <button
             onClick={handleShare}
-            className="p-2 rounded-full bg-white/70 text-gray-600 hover:bg-white backdrop-blur-sm transition-all"
+            className="p-2 rounded-full bg-white/70 text-gray-600 
+                       hover:bg-white backdrop-blur-sm transition-all 
+                       hover:scale-105"
             title="Share book"
           >
             <Share2 className="w-4 h-4" />
@@ -174,8 +203,10 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
         </div>
       </div>
 
+      {/* Book info */}
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <h3 className="font-semibold text-gray-900 text-lg mb-2 
+                       line-clamp-2 group-hover:text-blue-600 transition-colors">
           {title}
         </h3>
         {author && author.length > 0 && (
@@ -184,18 +215,17 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
           </p>
         )}
         {year && (
-          <p className="text-gray-600 text-sm mb-2">
-            Published: {year}
-          </p>
+          <p className="text-gray-600 text-sm mb-2">Published: {year}</p>
         )}
 
-        {/* Purchase Links */}
+        {/* Purchase links */}
         <div className="flex flex-wrap gap-2 mt-3">
           <a
             href={purchaseLinks.amazon}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm bg-orange-100 text-orange-600 px-3 py-1 rounded-full hover:bg-orange-200 transition-colors"
+            className="inline-flex items-center gap-1 text-sm bg-orange-100 text-orange-600 
+                       px-3 py-1 rounded-full hover:bg-orange-200 transition-colors"
           >
             <ShoppingCart className="w-4 h-4" />
             Amazon
@@ -204,7 +234,8 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
             href={purchaseLinks.bookshop}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm bg-green-100 text-green-600 px-3 py-1 rounded-full hover:bg-green-200 transition-colors"
+            className="text-sm bg-green-100 text-green-600 px-3 py-1 rounded-full 
+                       hover:bg-green-200 transition-colors"
           >
             Bookshop
           </a>
@@ -212,56 +243,76 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
             href={purchaseLinks.goodreads}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm bg-brown-100 text-amber-700 px-3 py-1 rounded-full hover:bg-amber-100 transition-colors"
+            className="text-sm bg-amber-100 text-amber-700 px-3 py-1 rounded-full 
+                       hover:bg-amber-200 transition-colors"
           >
             Goodreads
           </a>
         </div>
-        
+
+        {/* Expand button */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-3 text-blue-500 hover:text-blue-600 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-2 py-1 -ml-2 transition-colors"
+          className="mt-3 text-blue-500 hover:text-blue-600 text-sm font-medium 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 
+                     rounded-md px-2 py-1 -ml-2 transition-colors"
         >
           {isExpanded ? 'Show Less' : 'Show More'}
         </button>
 
+        {/* Expanded details section */}
         {isExpanded && (
-          <div className="mt-3 border-t pt-3 space-y-4 transition-all duration-300">
+          <div
+            className="
+              mt-3 border-t pt-3 space-y-4
+              transition-all duration-300
+            "
+          >
+            {/* Loading indicator */}
             {details.loading && (
               <div className="flex items-center justify-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
               </div>
             )}
-            
+
+            {/* Error state */}
             {details.error && (
               <div className="bg-red-50 text-red-500 text-sm p-3 rounded-md">
                 Failed to load book details. Please try again later.
               </div>
             )}
 
+            {/* First Sentence */}
             {details.firstSentence && (
               <div className="space-y-1">
                 <h4 className="font-medium text-gray-900 text-sm">Opening Line:</h4>
-                <p className="text-gray-700 text-sm italic">&quot;{details.firstSentence}&quot;</p>
+                <p className="text-gray-700 text-sm italic">
+                  &quot;{details.firstSentence}&quot;
+                </p>
               </div>
             )}
-            
+
+            {/* Page Count */}
             {details.pageCount && (
-              <p className="text-gray-700 text-sm">
-                Pages: {details.pageCount}
-              </p>
+              <p className="text-gray-700 text-sm">Pages: {details.pageCount}</p>
             )}
 
+            {/* Publisher */}
             {details.publishers && details.publishers.length > 0 && (
               <p className="text-gray-700 text-sm">
                 Publisher: {details.publishers[0]}
               </p>
             )}
-            
+
+            {/* Description */}
             {details.description && (
               <div className="space-y-2">
                 <h4 className="font-medium text-gray-900 text-sm">Description:</h4>
-                <p className={`text-gray-700 text-sm ${!showFullDescription && 'line-clamp-4'}`}>
+                <p
+                  className={`text-gray-700 text-sm ${
+                    !showFullDescription ? 'line-clamp-4' : ''
+                  }`}
+                >
                   {details.description}
                 </p>
                 {details.description.length > 300 && (
@@ -275,6 +326,7 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
               </div>
             )}
 
+            {/* Subjects */}
             {details.subjects && details.subjects.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium text-gray-900 text-sm">Subjects:</h4>
@@ -282,7 +334,8 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
                   {details.subjects.slice(0, 5).map((subject, index) => (
                     <span
                       key={index}
-                      className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors cursor-pointer"
+                      className="text-xs bg-blue-50 text-blue-600 px-2 py-1 
+                                 rounded-full hover:bg-blue-100 transition-colors cursor-pointer"
                     >
                       {subject}
                     </span>
@@ -296,6 +349,7 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
               </div>
             )}
 
+            {/* Publish Places */}
             {details.publishPlaces && details.publishPlaces.length > 0 && (
               <div className="space-y-2">
                 <h4 className="font-medium text-gray-900 text-sm">Published in:</h4>
@@ -309,7 +363,7 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
         )}
       </div>
 
-      {/* Share Menu */}
+      {/* Share Menu (fallback if Web Share API isn't supported) */}
       {showShareMenu && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-sm w-full mx-4">
@@ -322,7 +376,9 @@ export default function BookCard({ title, author, year, coverId, bookKey }: Book
                 Copy link
               </button>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${title}" on Book Explorer!`)}&url=${encodeURIComponent(`https://openlibrary.org${bookKey}`)}`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  `Check out "${title}" on Book Explorer!`
+                )}&url=${encodeURIComponent(`https://openlibrary.org${bookKey}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full px-4 py-2 text-left hover:bg-gray-100 rounded"

@@ -8,6 +8,10 @@
   --background-end-rgb: 0, 0, 0;
 }
 
+html {
+  scroll-behavior: smooth; /* Smooth scrolling for anchor links */
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -15,33 +19,31 @@ body {
     rgb(var(--background-start-rgb)),
     rgb(var(--background-end-rgb))
   );
+  line-height: 1.5; /* Slightly larger for readability */
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar (unchanged) */
 ::-webkit-scrollbar {
   width: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
 }
-
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Focus styles */
+/* Focus styles (unchanged) */
 *:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgb(59, 130, 246);
 }
 
-/* Smooth transitions */
+/* Smooth transitions (unchanged) */
 input, 
 select, 
 button {
