@@ -4,8 +4,9 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 23, 23, 23;
-  --background-end-rgb: 0, 0, 0;
+  --background-start-rgb: 30, 30, 30; /* Slightly brighter */
+  --background-end-rgb: 15, 15, 15;  /* Subtle contrast */
+  --accent-rgb: 139, 92, 246;        /* Matches the purple gradient */
 }
 
 html {
@@ -19,10 +20,10 @@ body {
     rgb(var(--background-start-rgb)),
     rgb(var(--background-end-rgb))
   );
-  line-height: 1.5; /* Slightly larger for readability */
+  line-height: 1.6; /* Slightly larger for better readability */
 }
 
-/* Custom scrollbar (unchanged) */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -30,26 +31,56 @@ body {
   background: rgba(255, 255, 255, 0.05);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* Focus styles (unchanged) */
+/* Focus styles */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgb(59, 130, 246);
+  box-shadow: 0 0 0 2px rgb(var(--accent-rgb));
 }
 
-/* Smooth transitions (unchanged) */
-input, 
-select, 
+/* Smooth transitions */
+input,
+select,
 button {
   transition: all 0.2s ease-in-out;
 }
 
 input::placeholder {
   color: rgb(156, 163, 175);
+}
+
+/* Links */
+a {
+  transition: color 0.2s ease-in-out;
+  color: rgb(var(--accent-rgb));
+}
+a:hover {
+  color: rgba(var(--accent-rgb), 0.8);
+}
+
+/* Section styling for spacing consistency */
+section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+/* Buttons */
+button {
+  background: rgb(var(--accent-rgb));
+  color: rgb(var(--foreground-rgb));
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+}
+button:hover {
+  background: rgba(var(--accent-rgb), 0.9);
+}
+button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.5);
 }
