@@ -69,7 +69,20 @@ export default function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
               <Link 
-                href="/explore" 
+                href="/" 
+                onClick={(e) => {
+                  // If we're already on the home page, focus the search bar
+                  if (window.location.pathname === '/') {
+                    e.preventDefault();
+                    setTimeout(() => {
+                      const searchInput = document.querySelector('input[placeholder*="Search for books"]') as HTMLInputElement;
+                      if (searchInput) {
+                        searchInput.focus();
+                        searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                    }, 100);
+                  }
+                }}
                 className="text-gray-300 hover:text-white font-medium relative group transition-all duration-300 hover:scale-105"
               >
                 Explore
@@ -205,22 +218,50 @@ export default function Header() {
 
             {/* Mobile Navigation */}
             <nav className="space-y-2">
-              {[
-                { href: '/explore', label: 'Explore', icon: '🔍' },
-                { href: '/about', label: 'About', icon: 'ℹ️' },
-                { href: '/contact', label: 'Contact', icon: '📧' },
-              ].map((item, index) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center gap-3 p-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 hover:translate-x-1 border border-transparent hover:border-white/10 animate-slide-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span className="text-lg">{item.icon}</span>
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              ))}
+              <Link
+                href="/"
+                className="flex items-center gap-3 p-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 hover:translate-x-1 border border-transparent hover:border-white/10 animate-slide-up"
+                style={{ animationDelay: '0s' }}
+                onClick={(e) => {
+                  // If we're already on the home page, focus the search bar
+                  if (window.location.pathname === '/') {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    setTimeout(() => {
+                      const searchInput = document.querySelector('input[placeholder*="Search for books"]') as HTMLInputElement;
+                      if (searchInput) {
+                        searchInput.focus();
+                        searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
+                    }, 300);
+                  } else {
+                    setIsMenuOpen(false);
+                  }
+                }}
+              >
+                <span className="text-lg">🔍</span>
+                <span className="font-medium">Explore</span>
+              </Link>
+
+              <Link
+                href="/about"
+                className="flex items-center gap-3 p-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 hover:translate-x-1 border border-transparent hover:border-white/10 animate-slide-up"
+                style={{ animationDelay: '0.1s' }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span className="text-lg">ℹ️</span>
+                <span className="font-medium">About</span>
+              </Link>
+
+              <Link
+                href="/contact"
+                className="flex items-center gap-3 p-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 hover:translate-x-1 border border-transparent hover:border-white/10 animate-slide-up"
+                style={{ animationDelay: '0.2s' }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span className="text-lg">📧</span>
+                <span className="font-medium">Contact</span>
+              </Link>
             </nav>
 
             {/* Mobile menu footer */}
