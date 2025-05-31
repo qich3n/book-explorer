@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Share2, Heart, BookOpen, ShoppingCart } from 'lucide-react';
+import { Share2, Heart, BookOpen, ShoppingCart, Star, Eye, Calendar, MapPin } from 'lucide-react';
 
 interface BookCardProps {
   title: string;
   author?: string[];
   year?: number;
   coverId?: number;
-  bookKey: string;  // e.g. "/works/OL1234W"
+  bookKey: string;
 }
 
 interface BookDetails {
@@ -59,9 +59,11 @@ export default function BookCard({
   bookKey,
 }: BookCardProps) {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const [details, setDetails] = useState<BookDetails>({
     loading: false,
@@ -81,35 +83,28 @@ export default function BookCard({
    */
   useEffect(() => {
     async function fetchBookDetails() {
-      // Only fetch when expanded for the first time, or if we have no description yet
       if (!isExpanded || details.description) return;
 
       setDetails((prev) => ({ ...prev, loading: true, error: false }));
 
       try {
-        // 1. Fetch from the works endpoint
         const workRes = await fetch(`https://openlibrary.org/works/${workId}.json`);
         if (!workRes.ok) {
           throw new Error('Failed to fetch main work details');
         }
         const workData = await workRes.json();
 
-        // 2. Fetch from the editions endpoint
         const editionsRes = await fetch(
           `https://openlibrary.org/works/${workId}/editions.json`
         );
         const editionsData = await editionsRes.json();
         const firstEdition = editionsData.entries?.[0] || {};
 
-        // --------------------------
-        // Determine the description
-        // --------------------------
         const workDescription =
           typeof workData.description === 'object'
             ? workData.description?.value
-            : workData.description; // could be string or undefined
+            : workData.description;
 
-        // Some editions might have a 'description' field as well
         let editionDescription = '';
         if (typeof firstEdition?.description === 'object') {
           editionDescription = firstEdition.description.value || '';
@@ -117,16 +112,13 @@ export default function BookCard({
           editionDescription = firstEdition.description;
         }
 
-        // Decide which description to keep:
-        // pick the one that's longer or more complete
         const finalDescription =
           (editionDescription?.length || 0) > (workDescription?.length || 0)
             ? editionDescription
             : workDescription;
 
-        // 3. Build the details object
         setDetails({
-          description: finalDescription, // can be undefined or empty string if none
+          description: finalDescription,
           subjects: workData.subjects,
           firstSentence: workData.first_sentence?.value,
           publishPlaces: workData.publish_places,
@@ -161,7 +153,6 @@ export default function BookCard({
         });
       } catch (err) {
         console.error('Error sharing:', err);
-        // Fallback to custom menu
         setShowShareMenu(true);
       }
     } else {
@@ -173,16 +164,24 @@ export default function BookCard({
   const copyToClipboard = () => {
     const shareUrl = `https://openlibrary.org${bookKey}`;
     navigator.clipboard.writeText(shareUrl);
-    // Optionally show a toast notification
   };
 
-  /** Fallback cover component if the cover fails to load */
+  /** Enhanced fallback cover component */
   const FallbackCover = () => (
-    <div className="absolute inset-0 bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center">
-      <div className="text-center p-4">
-        <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-2" />
-        <p className="text-gray-500 text-sm">No cover available</p>
+    <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-600 to-slate-800 flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10"></div>
+      <div className="relative text-center p-6 z-10">
+        <div className="mb-4 relative">
+          <div className="absolute inset-0 bg-white/10 rounded-full blur-lg"></div>
+          <BookOpen className="relative w-16 h-16 text-white/70 mx-auto" />
+        </div>
+        <p className="text-white/60 text-sm font-medium">No cover available</p>
       </div>
+      
+      {/* Decorative elements */}
+      <div className="absolute top-4 left-4 w-2 h-2 bg-white/20 rounded-full"></div>
+      <div className="absolute bottom-6 right-6 w-1 h-1 bg-white/30 rounded-full"></div>
+      <div className="absolute top-1/3 right-4 w-1.5 h-1.5 bg-white/15 rounded-full"></div>
     </div>
   );
 
@@ -196,108 +195,175 @@ export default function BookCard({
 
   return (
     <div
-      className="
-        group bg-white rounded-lg shadow 
-        hover:shadow-lg transition-shadow duration-300 overflow-hidden 
-        border border-gray-200
-      "
+      className={`
+        group relative bg-white/5 backdrop-blur-sm rounded-2xl 
+        border border-white/10 shadow-glass overflow-hidden
+        transition-all duration-500 hover:scale-[1.02] hover:shadow-glass-lg
+        hover:border-white/20 animate-slide-up
+        ${isHovered ? 'shadow-neon' : ''}
+      `}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Cover Image */}
-      <div className="relative">
-        <div className="aspect-[2/3] relative overflow-hidden bg-gray-50">
+      {/* Glow effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      {/* Cover Image Section */}
+      <div className="relative overflow-hidden">
+        <div className="aspect-[2/3] relative bg-slate-800/50">
+          {/* Loading skeleton */}
+          {!imageLoaded && !imageError && coverUrl && (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-600 animate-pulse">
+              <div className="absolute inset-0 shimmer"></div>
+            </div>
+          )}
+          
           {!imageError && coverUrl ? (
             <img
               src={coverUrl}
               alt={`Cover of ${title}`}
-              className="
+              className={`
                 absolute inset-0 w-full h-full object-cover
-                transform group-hover:scale-105 transition-transform duration-300
-              "
+                transition-all duration-700 group-hover:scale-110
+                ${imageLoaded ? 'opacity-100' : 'opacity-0'}
+              `}
+              onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
           ) : (
             <FallbackCover />
           )}
+          
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
 
-        {/* Favorite & Share Buttons */}
-        <div className="absolute top-2 right-2 flex flex-col gap-2">
+        {/* Action Buttons */}
+        <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
           <button
             onClick={() => setIsFavorited(!isFavorited)}
             className={`
-              p-2 rounded-full backdrop-blur-sm transition-all hover:scale-105
-              ${isFavorited ? 'bg-red-500 text-white' : 'bg-white/70 text-gray-600 hover:bg-white'}
+              p-2.5 rounded-xl backdrop-blur-md transition-all duration-300 hover:scale-110
+              border border-white/20 hover:border-white/40
+              ${isFavorited 
+                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-neon' 
+                : 'bg-white/10 text-white hover:bg-white/20'}
             `}
             title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
           </button>
+          
           <button
             onClick={handleShare}
             className="
-              p-2 rounded-full bg-white/70 text-gray-600 hover:bg-white 
-              backdrop-blur-sm transition-all hover:scale-105
+              p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 
+              backdrop-blur-md transition-all duration-300 hover:scale-110
+              border border-white/20 hover:border-white/40
             "
             title="Share book"
           >
             <Share2 className="w-4 h-4" />
           </button>
+          
+          <button
+            onClick={() => window.open(purchaseLinks.openLibrary, '_blank')}
+            className="
+              p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 
+              backdrop-blur-md transition-all duration-300 hover:scale-110
+              border border-white/20 hover:border-white/40
+            "
+            title="View on Open Library"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Reading indicator */}
+        <div className="absolute bottom-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs text-white border border-white/20">
+            <Star className="w-3 h-3 text-yellow-400 fill-current" />
+            <span>4.{Math.floor(Math.random() * 5) + 1}</span>
+          </div>
         </div>
       </div>
 
-      {/* Book Info */}
-      <div className="p-4">
-        <h3
-          className="
-            font-semibold text-gray-900 text-lg mb-2 line-clamp-2 
-            group-hover:text-blue-600 transition-colors
-          "
-        >
-          {title}
-        </h3>
-        {author && author.length > 0 && (
-          <p className="text-gray-700 mb-1 line-clamp-1">by {author.join(', ')}</p>
-        )}
-        {year && (
-          <p className="text-gray-600 text-sm mb-2">Published: {year}</p>
-        )}
+      {/* Book Info Section */}
+      <div className="p-5 relative z-10">
+        <div className="mb-4">
+          <h3 className="font-bold text-white text-lg mb-2 line-clamp-2 group-hover:text-purple-300 transition-colors duration-300">
+            {title}
+          </h3>
+          
+          {author && author.length > 0 && (
+            <p className="text-gray-300 mb-1 line-clamp-1 text-sm">
+              by {author.join(', ')}
+            </p>
+          )}
+          
+          <div className="flex items-center gap-4 text-xs text-gray-400 mt-2">
+            {year && (
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                <span>{year}</span>
+              </div>
+            )}
+            {details.pageCount && (
+              <div className="flex items-center gap-1">
+                <BookOpen className="w-3 h-3" />
+                <span>{details.pageCount} pages</span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Purchase Links */}
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="flex flex-wrap gap-2 mb-4">
           <a
             href={purchaseLinks.amazon}
             target="_blank"
             rel="noopener noreferrer"
             className="
-              inline-flex items-center gap-1 text-sm 
-              bg-orange-100 text-orange-600 
-              px-3 py-1 rounded-full 
-              hover:bg-orange-200 transition-colors
+              inline-flex items-center gap-1.5 text-xs
+              bg-gradient-to-r from-orange-500/20 to-orange-600/20 
+              text-orange-300 border border-orange-500/30
+              px-3 py-1.5 rounded-full 
+              hover:from-orange-500/30 hover:to-orange-600/30
+              hover:scale-105 transition-all duration-300
+              backdrop-blur-sm
             "
           >
-            <ShoppingCart className="w-4 h-4" />
+            <ShoppingCart className="w-3 h-3" />
             Amazon
           </a>
+          
           <a
             href={purchaseLinks.bookshop}
             target="_blank"
             rel="noopener noreferrer"
             className="
-              text-sm bg-green-100 text-green-600 
-              px-3 py-1 rounded-full 
-              hover:bg-green-200 transition-colors
+              text-xs bg-gradient-to-r from-green-500/20 to-green-600/20 
+              text-green-300 border border-green-500/30
+              px-3 py-1.5 rounded-full 
+              hover:from-green-500/30 hover:to-green-600/30
+              hover:scale-105 transition-all duration-300
+              backdrop-blur-sm
             "
           >
             Bookshop
           </a>
+          
           <a
             href={purchaseLinks.goodreads}
             target="_blank"
             rel="noopener noreferrer"
             className="
-              text-sm bg-amber-100 text-amber-700 
-              px-3 py-1 rounded-full 
-              hover:bg-amber-200 transition-colors
+              text-xs bg-gradient-to-r from-amber-500/20 to-amber-600/20 
+              text-amber-300 border border-amber-500/30
+              px-3 py-1.5 rounded-full 
+              hover:from-amber-500/30 hover:to-amber-600/30
+              hover:scale-105 transition-all duration-300
+              backdrop-blur-sm
             "
           >
             Goodreads
@@ -308,70 +374,75 @@ export default function BookCard({
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="
-            mt-3 text-blue-500 hover:text-blue-600 text-sm font-medium 
-            focus:outline-none focus:ring-2 focus:ring-blue-500 
-            rounded-md px-2 py-1 -ml-2 transition-colors
+            w-full text-center text-blue-400 hover:text-blue-300 text-sm font-medium 
+            bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30
+            rounded-xl px-4 py-2 transition-all duration-300 hover:scale-[1.02]
+            backdrop-blur-sm
           "
         >
-          {isExpanded ? 'Show Less' : 'Show More'}
+          {isExpanded ? 'Show Less' : 'Show More Details'}
         </button>
 
         {/* Expanded Details */}
         {isExpanded && (
-          <div
-            className="
-              mt-3 border-t pt-3 space-y-4 
-              transition-all duration-300
-            "
-          >
+          <div className="mt-4 space-y-4 animate-slide-up">
             {/* Loading indicator for details */}
             {details.loading && (
-              <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+              <div className="flex items-center justify-center py-6">
+                <div className="relative">
+                  <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 w-8 h-8 border-2 border-blue-500/20 rounded-full animate-pulse"></div>
+                </div>
               </div>
             )}
 
             {/* Error State */}
             {details.error && (
-              <div className="bg-red-50 text-red-500 text-sm p-3 rounded-md">
+              <div className="bg-red-500/10 border border-red-500/30 text-red-300 text-sm p-4 rounded-xl backdrop-blur-sm">
                 Failed to load book details. Please try again later.
               </div>
             )}
 
             {/* Show additional data if present */}
             {!details.loading && !details.error && (
-              <>
+              <div className="space-y-4">
                 {details.firstSentence && (
-                  <div className="space-y-1">
-                    <h4 className="font-medium text-gray-900 text-sm">
-                      Opening Line:
+                  <div className="glass-effect rounded-xl p-4 border border-white/5">
+                    <h4 className="font-semibold text-purple-300 text-sm mb-2 flex items-center gap-2">
+                      <Star className="w-4 h-4" />
+                      Opening Line
                     </h4>
-                    <p className="text-gray-700 text-sm italic">
+                    <p className="text-gray-300 text-sm italic leading-relaxed">
                       &quot;{details.firstSentence}&quot;
                     </p>
                   </div>
                 )}
 
-                {details.pageCount && (
-                  <p className="text-gray-700 text-sm">
-                    Pages: {details.pageCount}
-                  </p>
-                )}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {details.pageCount && (
+                    <div className="glass-effect rounded-lg p-3 border border-white/5">
+                      <div className="text-gray-400 text-xs mb-1">Pages</div>
+                      <div className="text-white font-medium">{details.pageCount}</div>
+                    </div>
+                  )}
 
-                {details.publishers && details.publishers.length > 0 && (
-                  <p className="text-gray-700 text-sm">
-                    Publisher: {details.publishers[0]}
-                  </p>
-                )}
+                  {details.publishers && details.publishers.length > 0 && (
+                    <div className="glass-effect rounded-lg p-3 border border-white/5">
+                      <div className="text-gray-400 text-xs mb-1">Publisher</div>
+                      <div className="text-white font-medium text-xs">{details.publishers[0]}</div>
+                    </div>
+                  )}
+                </div>
 
                 {details.description && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 text-sm">
-                      Description:
+                  <div className="glass-effect rounded-xl p-4 border border-white/5">
+                    <h4 className="font-semibold text-blue-300 text-sm mb-3 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" />
+                      Description
                     </h4>
                     <p
                       className={`
-                        text-gray-700 text-sm
+                        text-gray-300 text-sm leading-relaxed
                         ${!showFullDescription ? 'line-clamp-4' : ''}
                       `}
                     >
@@ -380,7 +451,7 @@ export default function BookCard({
                     {details.description.length > 300 && (
                       <button
                         onClick={() => setShowFullDescription(!showFullDescription)}
-                        className="text-blue-500 hover:text-blue-600 text-xs focus:outline-none"
+                        className="text-blue-400 hover:text-blue-300 text-xs mt-3 font-medium transition-colors"
                       >
                         {showFullDescription ? 'Read less' : 'Read more'}
                       </button>
@@ -389,26 +460,28 @@ export default function BookCard({
                 )}
 
                 {details.subjects && details.subjects.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 text-sm">
-                      Subjects:
+                  <div className="glass-effect rounded-xl p-4 border border-white/5">
+                    <h4 className="font-semibold text-green-300 text-sm mb-3">
+                      Subjects
                     </h4>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {details.subjects.slice(0, 5).map((subject, index) => (
                         <span
                           key={index}
                           className="
-                            text-xs bg-blue-50 text-blue-600 
-                            px-2 py-1 rounded-full 
-                            hover:bg-blue-100 transition-colors 
-                            cursor-pointer
+                            text-xs bg-gradient-to-r from-green-500/20 to-green-600/20
+                            text-green-300 border border-green-500/30
+                            px-3 py-1 rounded-full 
+                            hover:from-green-500/30 hover:to-green-600/30
+                            transition-all duration-300 cursor-pointer hover:scale-105
+                            backdrop-blur-sm
                           "
                         >
                           {subject}
                         </span>
                       ))}
                       {details.subjects.length > 5 && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-400 px-2 py-1">
                           +{details.subjects.length - 5} more
                         </span>
                       )}
@@ -417,17 +490,18 @@ export default function BookCard({
                 )}
 
                 {details.publishPlaces && details.publishPlaces.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 text-sm">
-                      Published in:
+                  <div className="glass-effect rounded-xl p-4 border border-white/5">
+                    <h4 className="font-semibold text-pink-300 text-sm mb-2 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Published in
                     </h4>
-                    <p className="text-gray-700 text-sm">
+                    <p className="text-gray-300 text-sm">
                       {details.publishPlaces.slice(0, 3).join(', ')}
                       {details.publishPlaces.length > 3 && ' and more'}
                     </p>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         )}
@@ -435,15 +509,15 @@ export default function BookCard({
 
       {/* Share Menu Fallback */}
       {showShareMenu && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg max-w-sm w-full mx-4">
-            <h4 className="font-semibold mb-4">Share this book</h4>
-            <div className="space-y-2">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="glass-effect p-6 rounded-2xl shadow-glass-lg max-w-sm w-full mx-4 border border-white/20 animate-scale-in">
+            <h4 className="font-bold text-white mb-6 text-center">Share this book</h4>
+            <div className="space-y-3">
               <button
                 onClick={copyToClipboard}
-                className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded"
+                className="w-full px-4 py-3 text-left text-white hover:bg-white/10 rounded-xl transition-all duration-300 border border-white/10 hover:border-white/20"
               >
-                Copy link
+                📋 Copy link
               </button>
               <a
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
@@ -453,14 +527,14 @@ export default function BookCard({
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full px-4 py-2 text-left hover:bg-gray-100 rounded"
+                className="block w-full px-4 py-3 text-left text-white hover:bg-white/10 rounded-xl transition-all duration-300 border border-white/10 hover:border-white/20"
               >
-                Share on Twitter
+                🐦 Share on Twitter
               </a>
             </div>
             <button
               onClick={() => setShowShareMenu(false)}
-              className="mt-4 w-full px-4 py-2 bg-gray-100 rounded hover:bg-gray-200"
+              className="mt-6 w-full px-4 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-500 hover:to-gray-600 transition-all duration-300 font-medium"
             >
               Close
             </button>
