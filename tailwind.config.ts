@@ -6,6 +6,7 @@ export default {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: 'class', // Enable class-based dark mode
   theme: {
     extend: {
       colors: {
@@ -27,6 +28,19 @@ export default {
           light: 'rgba(255, 255, 255, 0.05)',
           medium: 'rgba(255, 255, 255, 0.1)',
           heavy: 'rgba(255, 255, 255, 0.15)',
+        },
+        // Light mode specific colors
+        light: {
+          bg: {
+            primary: 'rgb(248, 250, 252)',
+            secondary: 'rgb(241, 245, 249)',
+            tertiary: 'rgb(226, 232, 240)',
+          },
+          text: {
+            primary: 'rgb(15, 23, 42)',
+            secondary: 'rgb(51, 65, 85)',
+            tertiary: 'rgb(100, 116, 139)',
+          }
         }
       },
       fontFamily: {
@@ -106,6 +120,8 @@ export default {
       boxShadow: {
         'glass': '0 8px 32px rgba(0, 0, 0, 0.3)',
         'glass-lg': '0 25px 50px rgba(0, 0, 0, 0.4)',
+        'glass-light': '0 8px 32px rgba(0, 0, 0, 0.08)',
+        'glass-light-lg': '0 25px 50px rgba(0, 0, 0, 0.12)',
         'neon': '0 0 20px rgba(99, 102, 241, 0.5)',
         'neon-lg': '0 0 40px rgba(99, 102, 241, 0.7)',
         'soft': '0 2px 15px rgba(0, 0, 0, 0.1)',
@@ -145,11 +161,12 @@ export default {
           textShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
         },
         '.glass-effect': {
-          background: 'rgba(255, 255, 255, 0.05)',
+          background: 'rgba(0, 0, 0, 0.2)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          transition: 'all 0.3s ease',
         },
         '.neomorphic': {
           background: 'linear-gradient(145deg, #2a2d47, #1a1d35)',
@@ -162,8 +179,42 @@ export default {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
         },
+        // Light mode specific utilities
+        '.light .glass-effect': {
+          background: 'rgba(255, 255, 255, 0.8)',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+        },
+        '.light .neomorphic': {
+          background: 'linear-gradient(145deg, #f0f0f0, #ffffff)',
+          boxShadow: '20px 20px 40px #d1d1d1, -20px -20px 40px #ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.05)',
+        },
+        // Theme transition utility
+        '.theme-transition': {
+          transition: 'background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease',
+        },
+        // Text color utilities that work with both themes
+        '.text-theme-primary': {
+          color: 'rgb(255, 255, 255)',
+        },
+        '.light .text-theme-primary': {
+          color: 'rgb(15, 23, 42)',
+        },
+        '.text-theme-secondary': {
+          color: 'rgb(209, 213, 219)',
+        },
+        '.light .text-theme-secondary': {
+          color: 'rgb(51, 65, 85)',
+        },
+        '.text-theme-tertiary': {
+          color: 'rgb(156, 163, 175)',
+        },
+        '.light .text-theme-tertiary': {
+          color: 'rgb(100, 116, 139)',
+        },
       }
-      addUtilities(newUtilities, ['responsive', 'hover'])
+      addUtilities(newUtilities, ['responsive', 'hover', 'dark'])
     }
   ],
 } satisfies Config;

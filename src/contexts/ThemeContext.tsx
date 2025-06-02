@@ -38,18 +38,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return <div className="opacity-0">{children}</div>;
-  }
+  const contextValue = {
+    theme,
+    toggleTheme,
+    isDark: theme === 'dark'
+  };
 
+  // Always provide the context, but conditionally render content visibility
   return (
-    <ThemeContext.Provider value={{ 
-      theme, 
-      toggleTheme, 
-      isDark: theme === 'dark' 
-    }}>
-      {children}
+    <ThemeContext.Provider value={contextValue}>
+      <div className={`${mounted ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 }

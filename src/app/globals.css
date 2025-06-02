@@ -5,7 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Modern Color Palettes */
+  /* Modern Color Palettes - Dark Mode */
   --foreground-rgb: 255, 255, 255;
   --background-start: 5, 8, 22;
   --background-mid: 15, 23, 42;
@@ -19,7 +19,7 @@
   --warning: 251, 191, 36;
   --danger: 239, 68, 68;
   
-  /* Glass Effect Variables */
+  /* Glass Effect Variables - Dark Mode */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -29,6 +29,19 @@
   --transition-normal: 0.3s ease-out;
   --transition-slow: 0.5s ease-out;
   --bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Light Mode Variables */
+:root.light {
+  --foreground-rgb: 0, 0, 0;
+  --background-start: 248, 250, 252;
+  --background-mid: 241, 245, 249;
+  --background-end: 226, 232, 240;
+  
+  /* Glass Effect Variables - Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 /* Smooth scrolling for the entire page */
@@ -50,6 +63,19 @@ body {
   animation: gradientShift 15s ease infinite;
   line-height: 1.6;
   overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Ensure dark mode is default */
+:root,
+:root.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start: 5, 8, 22;
+  --background-mid: 15, 23, 42;
+  --background-end: 2, 6, 23;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 /* Animated background gradient */
@@ -67,6 +93,10 @@ body {
 ::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 10px;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -111,6 +141,14 @@ body {
     0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
+.light .glass-hover:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
 /* Neumorphism button style */
 .neomorphic {
   background: linear-gradient(145deg, #2a2d47, #1a1d35);
@@ -120,10 +158,24 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.light .neomorphic {
+  background: linear-gradient(145deg, #f0f0f0, #ffffff);
+  box-shadow: 
+    20px 20px 40px #d1d1d1,
+    -20px -20px 40px #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
 .neomorphic:hover {
   box-shadow: 
     inset 20px 20px 40px #151829,
     inset -20px -20px 40px #2f3455;
+}
+
+.light .neomorphic:hover {
+  box-shadow: 
+    inset 20px 20px 40px #d1d1d1,
+    inset -20px -20px 40px #ffffff;
 }
 
 /* Gradient text utility */
@@ -171,14 +223,28 @@ input:focus, select:focus, textarea:focus {
     0 0 0 1px rgb(var(--primary));
 }
 
+.light input:focus, .light select:focus, .light textarea:focus {
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgb(var(--primary));
+}
+
 input::placeholder {
   color: rgba(156, 163, 175, 0.8);
   transition: all var(--transition-fast);
 }
 
+.light input::placeholder {
+  color: rgba(75, 85, 99, 0.8);
+}
+
 input:focus::placeholder {
   color: rgba(156, 163, 175, 0.4);
   transform: translateY(-2px);
+}
+
+.light input:focus::placeholder {
+  color: rgba(75, 85, 99, 0.4);
 }
 
 /* Enhanced link styles */
@@ -268,6 +334,14 @@ a:hover::before {
   animation: shimmer 1.5s infinite;
 }
 
+.light .shimmer {
+  background: linear-gradient(90deg, 
+    rgba(0, 0, 0, 0.05) 25%, 
+    rgba(0, 0, 0, 0.1) 50%, 
+    rgba(0, 0, 0, 0.05) 75%);
+  background-size: 200% 100%;
+}
+
 /* Card animations */
 @keyframes slideUp {
   from {
@@ -297,13 +371,53 @@ a:hover::before {
 .stagger-item:nth-child(4) { animation-delay: 0.4s; }
 .stagger-item:nth-child(5) { animation-delay: 0.5s; }
 
+/* Light/Dark mode specific glass effects */
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s ease;
+}
+
+.light .glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* Text colors for light mode */
+.light .text-gray-300 { color: rgb(75, 85, 99); }
+.light .text-gray-400 { color: rgb(107, 114, 128); }
+.light .text-gray-500 { color: rgb(156, 163, 175); }
+.light .text-white { color: rgb(0, 0, 0); }
+
+/* Background adjustments for light mode */
+.light .bg-white\/5 { background-color: rgba(0, 0, 0, 0.05); }
+.light .bg-white\/10 { background-color: rgba(0, 0, 0, 0.1); }
+.light .bg-white\/20 { background-color: rgba(0, 0, 0, 0.2); }
+
+.light .bg-black\/90 { background-color: rgba(255, 255, 255, 0.9); }
+
+/* Border adjustments for light mode */
+.light .border-white\/5 { border-color: rgba(0, 0, 0, 0.05); }
+.light .border-white\/10 { border-color: rgba(0, 0, 0, 0.1); }
+.light .border-white\/20 { border-color: rgba(0, 0, 0, 0.2); }
+
+/* Hover states for light mode */
+.light .hover\:bg-white\/10:hover { background-color: rgba(0, 0, 0, 0.1); }
+.light .hover\:bg-white\/20:hover { background-color: rgba(0, 0, 0, 0.2); }
+.light .hover\:border-white\/20:hover { border-color: rgba(0, 0, 0, 0.2); }
+.light .hover\:border-white\/40:hover { border-color: rgba(0, 0, 0, 0.4); }
+
 /* Responsive utilities */
 @media (max-width: 768px) {
   body {
     font-size: 14px;
   }
   
-  .glass {
+  .glass, .glass-effect {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
   }
@@ -321,4 +435,28 @@ a:hover::before {
 ::selection {
   background: rgba(var(--primary), 0.3);
   color: white;
+}
+
+.light ::selection {
+  background: rgba(var(--primary), 0.2);
+  color: black;
+}
+
+/* Custom utility classes for theme switching */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Specific component adjustments for light mode */
+.light .animate-pulse-glow {
+  animation: pulseGlowLight 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlowLight {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(var(--primary), 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(var(--primary), 0.4);
+  }
 }
