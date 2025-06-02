@@ -104,7 +104,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   );
 
   return (
-    <div className="relative w-full search-container">
+    <div className="relative w-full search-container z-50">
       <form onSubmit={handleSubmit} className="relative group">
         <div
           className={`
@@ -240,7 +240,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         <div
           ref={suggestionsRef}
           className="
-            absolute top-full left-0 right-0 mt-2 z-50
+            absolute top-full left-0 right-0 mt-2 z-[100]
             glass-effect rounded-2xl border border-white/10 shadow-glass-lg
             backdrop-blur-xl animate-slide-up
           "

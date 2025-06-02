@@ -64,7 +64,7 @@ export default function Home() {
       </section>
 
       {/* Search & Sort Section */}
-      <section className="relative mb-12 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+      <section className="relative mb-12 animate-slide-up z-50" style={{ animationDelay: '0.2s' }}>
         <div className="glass-effect rounded-3xl p-8 backdrop-blur-xl border border-white/10 dark:border-white/10 light:border-black/10 shadow-glass-lg hover:shadow-glass-lg transition-all duration-500 hover:scale-[1.02]">
           <div className="flex flex-col lg:flex-row items-center lg:justify-between gap-6">
             <div className="w-full lg:w-3/4">
@@ -93,7 +93,7 @@ export default function Home() {
 
       {/* Welcome Message for Empty Search */}
       {!searchQuery && (
-        <section className="relative text-center mt-16 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+        <section className="relative text-center mt-16 animate-fade-in z-10" style={{ animationDelay: '0.6s' }}>
           <div className="glass-effect rounded-3xl p-12 backdrop-blur-xl border border-white/10 dark:border-white/10 light:border-black/10 shadow-glass max-w-4xl mx-auto">
             <div className="mb-8">
               <div className="flex justify-center mb-6">
