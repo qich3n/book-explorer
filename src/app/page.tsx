@@ -64,8 +64,8 @@ export default function Home() {
       </section>
 
       {/* Search & Sort Section */}
-      <section className="relative mb-12 animate-slide-up z-50" style={{ animationDelay: '0.2s' }}>
-        <div className="glass-effect rounded-3xl p-8 backdrop-blur-xl border border-white/10 dark:border-white/10 light:border-black/10 shadow-glass-lg hover:shadow-glass-lg transition-all duration-500 hover:scale-[1.02]">
+      <section className="relative mb-12 animate-slide-up z-10" style={{ animationDelay: '0.2s' }}>
+        <div className="bg-white/5 dark:bg-white/5 light:bg-black/5 rounded-3xl p-8 backdrop-blur-lg border border-white/5 dark:border-white/5 light:border-black/5 shadow-glass hover:shadow-glass-lg transition-all duration-500 hover:scale-[1.02]">
           <div className="flex flex-col lg:flex-row items-center lg:justify-between gap-6">
             <div className="w-full lg:w-3/4">
               <div className="relative">
@@ -76,7 +76,7 @@ export default function Home() {
               </div>
             </div>
             <div className="w-full lg:w-auto flex justify-end">
-              <div className="glass-effect rounded-2xl p-2 border border-white/5 dark:border-white/5 light:border-black/5">
+              <div className="bg-white/5 dark:bg-white/5 light:bg-black/5 rounded-2xl p-2 border border-white/5 dark:border-white/5 light:border-black/5">
                 <SortSelector onSort={setSortOption} />
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function Home() {
 
       {/* Book List Section */}
       <section className="relative animate-slide-up" style={{ animationDelay: '0.4s' }}>
-        <div className="glass-effect rounded-3xl p-8 backdrop-blur-xl border border-white/10 dark:border-white/10 light:border-black/10 shadow-glass-lg min-h-[600px]">
+        <div className="bg-white/5 dark:bg-white/5 light:bg-black/5 rounded-3xl p-8 backdrop-blur-lg border border-white/5 dark:border-white/5 light:border-black/5 shadow-glass min-h-[600px]">
           <BookList searchQuery={searchQuery} sortOption={sortOption} />
         </div>
       </section>
@@ -94,7 +94,7 @@ export default function Home() {
       {/* Welcome Message for Empty Search */}
       {!searchQuery && (
         <section className="relative text-center mt-16 animate-fade-in z-10" style={{ animationDelay: '0.6s' }}>
-          <div className="glass-effect rounded-3xl p-12 backdrop-blur-xl border border-white/10 dark:border-white/10 light:border-black/10 shadow-glass max-w-4xl mx-auto">
+          <div className="bg-white/5 dark:bg-white/5 light:bg-black/5 rounded-3xl p-12 backdrop-blur-lg border border-white/5 dark:border-white/5 light:border-black/5 shadow-glass max-w-4xl mx-auto">
             <div className="mb-8">
               <div className="flex justify-center mb-6">
                 <div className="relative">
@@ -114,7 +114,7 @@ export default function Home() {
             
             {/* Search suggestions */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="glass-effect rounded-2xl p-6 border border-white/5 dark:border-white/5 light:border-black/5 hover:border-purple-500/30 transition-all duration-300 hover:scale-105 group">
+              <div className="bg-white/5 dark:bg-white/5 light:bg-black/5 rounded-2xl p-6 border border-white/5 dark:border-white/5 light:border-black/5 hover:border-purple-500/30 transition-all duration-300 hover:scale-105 group">
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
@@ -122,7 +122,7 @@ export default function Home() {
                 <p className="text-theme-tertiary text-sm">Search for specific books like &quot;The Great Gatsby&quot;</p>
               </div>
               
-              <div className="glass-effect rounded-2xl p-6 border border-white/5 dark:border-white/5 light:border-black/5 hover:border-blue-500/30 transition-all duration-300 hover:scale-105 group">
+              <div className="bg-white/5 dark:bg-white/5 light:bg-black/5 rounded-2xl p-6 border border-white/5 dark:border-white/5 light:border-black/5 hover:border-blue-500/30 transition-all duration-300 hover:scale-105 group">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                   <Search className="w-6 h-6 text-white" />
                 </div>
@@ -130,7 +130,7 @@ export default function Home() {
                 <p className="text-theme-tertiary text-sm">Find works by your favorite authors</p>
               </div>
               
-              <div className="glass-effect rounded-2xl p-6 border border-white/5 dark:border-white/5 light:border-black/5 hover:border-pink-500/30 transition-all duration-300 hover:scale-105 group">
+              <div className="bg-white/5 dark:bg-white/5 light:bg-black/5 rounded-2xl p-6 border border-white/5 dark:border-white/5 light:border-black/5 hover:border-pink-500/30 transition-all duration-300 hover:scale-105 group">
                 <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
@@ -147,7 +147,7 @@ export default function Home() {
                   <button
                     key={term}
                     onClick={() => setSearchQuery(term)}
-                    className="glass-effect px-4 py-2 rounded-full text-sm text-theme-secondary border border-white/10 dark:border-white/10 light:border-black/10 hover:border-purple-500/50 hover:text-theme-primary transition-all duration-300 hover:scale-105 hover:shadow-neon"
+                    className="bg-white/5 dark:bg-white/5 light:bg-black/5 px-4 py-2 rounded-full text-sm text-theme-secondary border border-white/5 dark:border-white/5 light:border-black/5 hover:border-purple-500/50 hover:text-theme-primary transition-all duration-300 hover:scale-105 hover:shadow-neon"
                   >
                     {term}
                   </button>

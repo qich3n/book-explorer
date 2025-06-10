@@ -83,7 +83,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     localStorage.removeItem(RECENT_SEARCHES_KEY);
   };
 
-  // Close suggestions when clicking outside
+  // Close suggestions when clicking outside or when overlays appear
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -95,8 +95,35 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       }
     };
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowSuggestions(false);
+        setIsFocused(false);
+      }
+    };
+
+    // Hide suggestions when mobile menu button is clicked
+    const handleMenuToggle = () => {
+      setShowSuggestions(false);
+      setIsFocused(false);
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    
+    // Listen for mobile menu button clicks
+    const menuButtons = document.querySelectorAll('[aria-label="Toggle Menu"]');
+    menuButtons.forEach(button => {
+      button.addEventListener('click', handleMenuToggle);
+    });
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+      menuButtons.forEach(button => {
+        button.removeEventListener('click', handleMenuToggle);
+      });
+    };
   }, []);
 
   const filteredPopularSearches = POPULAR_SEARCHES.filter(search =>
@@ -240,8 +267,8 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         <div
           ref={suggestionsRef}
           className="
-            absolute top-full left-0 right-0 mt-2 z-[100]
-            bg-gray-900/95 dark:bg-gray-900/95 light:bg-white/95
+            absolute top-full left-0 right-0 mt-2 z-30
+            bg-gray-900/85 dark:bg-gray-900/85 light:bg-white/90
             backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/20 light:border-gray-200
             shadow-glass-lg animate-slide-up
           "
