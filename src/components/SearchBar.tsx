@@ -241,8 +241,9 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           ref={suggestionsRef}
           className="
             absolute top-full left-0 right-0 mt-2 z-[100]
-            glass-effect rounded-2xl border border-white/10 shadow-glass-lg
-            backdrop-blur-xl animate-slide-up
+            bg-gray-900/95 dark:bg-gray-900/95 light:bg-white/95
+            backdrop-blur-xl rounded-2xl border border-white/20 dark:border-white/20 light:border-gray-200
+            shadow-glass-lg animate-slide-up
           "
         >
           <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
