@@ -346,7 +346,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           {/* Bottom tip */}
           <div className="px-4 py-3 border-t border-white/5 bg-white/5">
             <p className="text-xs text-gray-400 text-center">
-              💡 Tip: Try searching by title, author, or subject for best results
+              💡 Tip: Try searching by title, author, or subject for the best results
             </p>
           </div>
         </div>
