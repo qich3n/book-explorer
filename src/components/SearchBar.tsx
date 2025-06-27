@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Search, X, Sparkles, BookOpen, Clock } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Search, X, Sparkles, BookOpen, Clock, TrendingUp } from 'lucide-react';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -25,8 +25,10 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load recent searches from localStorage on mount
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     }
   }, []);
 
-  const saveRecentSearch = (searchQuery: string) => {
+  const saveRecentSearch = useCallback((searchQuery: string) => {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
 
@@ -51,30 +53,64 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
     setRecentSearches(updated);
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+  }, [recentSearches]);
+
+  // Debounced search function
+  const debouncedSearch = useCallback((searchQuery: string) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      if (searchQuery.trim() && searchQuery.length >= 2) {
+        setIsSearching(true);
+        onSearch(searchQuery.trim());
+        saveRecentSearch(searchQuery.trim());
+        setTimeout(() => setIsSearching(false), 500);
+      }
+    }, 300); // 300ms debounce
+  }, [onSearch, saveRecentSearch]);
+
+  // Handle input changes with debouncing
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    
+    // Only trigger debounced search if we have enough characters
+    if (value.length >= 2) {
+      debouncedSearch(value);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       const trimmedQuery = query.trim();
+      setIsSearching(true);
       onSearch(trimmedQuery);
       saveRecentSearch(trimmedQuery);
       setShowSuggestions(false);
       inputRef.current?.blur();
+      setTimeout(() => setIsSearching(false), 500);
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     setQuery(suggestion);
+    setIsSearching(true);
     onSearch(suggestion);
     saveRecentSearch(suggestion);
     setShowSuggestions(false);
     inputRef.current?.blur();
+    setTimeout(() => setIsSearching(false), 500);
   };
 
   const clearQuery = () => {
     setQuery('');
     setShowSuggestions(false);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     inputRef.current?.focus();
   };
 
@@ -123,6 +159,9 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
       menuButtons.forEach(button => {
         button.removeEventListener('click', handleMenuToggle);
       });
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
     };
   }, []);
 
@@ -153,16 +192,20 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           
           {/* Main search container */}
           <div className="relative w-full glass-effect rounded-2xl border border-white/20 overflow-hidden">
-            {/* Search icon */}
+            {/* Search icon with loading state */}
             <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
               <div className="relative">
-                <Search 
-                  className={`
-                    w-5 h-5 transition-all duration-300
-                    ${isFocused ? 'text-purple-400 scale-110' : 'text-gray-400'}
-                  `} 
-                />
-                {isFocused && (
+                {isSearching ? (
+                  <div className="w-5 h-5 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+                ) : (
+                  <Search 
+                    className={`
+                      w-5 h-5 transition-all duration-300
+                      ${isFocused ? 'text-purple-400 scale-110' : 'text-gray-400'}
+                    `} 
+                  />
+                )}
+                {isFocused && !isSearching && (
                   <div className="absolute inset-0 animate-ping">
                     <Search className="w-5 h-5 text-purple-400 opacity-20" />
                   </div>
@@ -175,7 +218,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               ref={inputRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={handleInputChange}
               onFocus={() => {
                 setIsFocused(true);
                 setShowSuggestions(true);
@@ -192,7 +235,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               placeholder="Search for books, authors, or subjects..."
               className="w-full h-14 pl-12 pr-16 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg font-medium transition-all duration-300 relative z-10"
               minLength={1}
-              required
             />
 
             {/* Clear button */}
@@ -213,17 +255,21 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               </button>
             )}
 
-            {/* Magic sparkle */}
+            {/* Magic sparkle or search status */}
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <Sparkles 
-                className={`
-                  w-5 h-5 transition-all duration-500
-                  ${isFocused 
-                    ? 'text-purple-400 animate-pulse-glow' 
-                    : 'text-gray-500 group-hover:text-gray-400'
-                  }
-                `} 
-              />
+              {isSearching ? (
+                <TrendingUp className="w-5 h-5 text-green-400 animate-pulse" />
+              ) : (
+                <Sparkles 
+                  className={`
+                    w-5 h-5 transition-all duration-500
+                    ${isFocused 
+                      ? 'text-purple-400 animate-pulse-glow' 
+                      : 'text-gray-500 group-hover:text-gray-400'
+                    }
+                  `} 
+                />
+              )}
             </div>
 
             {/* Animated border */}
@@ -240,14 +286,17 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           </div>
         </div>
 
-        {/* Search button */}
+        {/* Search button with loading state */}
         <button
           type="submit"
+          disabled={isSearching || !query.trim()}
           className="
             ml-4 px-8 py-3.5 rounded-2xl font-semibold text-white
             bg-gradient-to-r from-purple-500 to-blue-500
             hover:from-purple-600 hover:to-blue-600
+            disabled:from-gray-600 disabled:to-gray-700
             transition-all duration-300 hover:scale-105 hover:shadow-neon
+            disabled:cursor-not-allowed disabled:scale-100
             border border-purple-500/30 hover:border-purple-400/50
             backdrop-blur-sm relative overflow-hidden group
           "
@@ -258,11 +307,20 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           {/* Button shimmer effect */}
           <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
           
-          <span className="relative z-10">Search</span>
+          <span className="relative z-10 flex items-center gap-2">
+            {isSearching ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Searching...
+              </>
+            ) : (
+              'Search'
+            )}
+          </span>
         </button>
       </form>
 
-      {/* Suggestions dropdown */}
+      {/* Enhanced suggestions dropdown */}
       {showSuggestions && (isFocused || query) && (
         <div
           ref={suggestionsRef}
@@ -284,9 +342,9 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                   </h4>
                   <button
                     onClick={clearRecentSearches}
-                    className="text-xs text-gray-400 hover:text-white transition-colors"
+                    className="text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/10"
                   >
-                    Clear
+                    Clear all
                   </button>
                 </div>
                 <div className="space-y-1">
@@ -300,6 +358,9 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
                       <div className="flex items-center gap-3">
                         <Clock className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors" />
                         <span className="flex-1">{search}</span>
+                        <span className="text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Search again
+                        </span>
                       </div>
                     </button>
                   ))}
@@ -332,22 +393,34 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               </div>
             )}
 
-            {/* No suggestions state */}
+            {/* Enhanced no suggestions state */}
             {query && filteredPopularSearches.length === 0 && recentSearches.length === 0 && (
               <div className="text-center py-8">
                 <BookOpen className="w-12 h-12 text-gray-500 mx-auto mb-3 opacity-50" />
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-400 text-sm mb-2">
                   Press Enter to search for &quot;{query}&quot;
                 </p>
+                {query.length < 2 && (
+                  <p className="text-gray-500 text-xs">
+                    Try typing at least 2 characters for better suggestions
+                  </p>
+                )}
               </div>
             )}
           </div>
 
-          {/* Bottom tip */}
+          {/* Enhanced bottom tip */}
           <div className="px-4 py-3 border-t border-white/5 bg-white/5">
-            <p className="text-xs text-gray-400 text-center">
-              💡 Tip: Try searching by title, author, or subject for the best results
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-400">
+                💡 Tip: Search automatically as you type
+              </p>
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <span>Press</span>
+                <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-xs">ESC</kbd>
+                <span>to close</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
