@@ -1,7 +1,12 @@
 /* eslint-disable @next/next/no-html-link-for-pages */
 'use client';
 
-import { BookOpen, Search, Star, Globe, Heart, Zap, Users, Target, Sparkles, Code, Database, Shield } from 'lucide-react';
+import { BookOpen, Search, Star, Globe, Heart, Zap, Users, Target, Code, Database, Shield } from 'lucide-react';
+import FloatingBackground from '@/components/FloatingBackground';
+import PageHero from '@/components/PageHero';
+import CallToAction from '@/components/CallToAction';
+import FeatureCard from '@/components/FeatureCard';
+import { ColorVariant } from '@/lib/utils/colorUtils';
 
 export default function About() {
   const features = [
@@ -9,37 +14,37 @@ export default function About() {
       icon: Search,
       title: 'Intelligent Search',
       description: 'Powered by Open Library\'s extensive database with smart filtering and sorting capabilities.',
-      color: 'purple'
+      color: 'purple' as ColorVariant
     },
     {
       icon: BookOpen,
       title: 'Comprehensive Database',
       description: 'Access to millions of books, from classics to contemporary works across all genres.',
-      color: 'blue'
+      color: 'blue' as ColorVariant
     },
     {
       icon: Star,
       title: 'Enhanced Details',
       description: 'Rich book information including descriptions, subjects, and publication details.',
-      color: 'pink'
+      color: 'pink' as ColorVariant
     },
     {
       icon: Globe,
       title: 'Global Coverage',
       description: 'Books from publishers worldwide with multiple language support.',
-      color: 'green'
+      color: 'green' as ColorVariant
     },
     {
       icon: Heart,
       title: 'Personal Collections',
       description: 'Save your favorite books and build your personal reading lists.',
-      color: 'red'
+      color: 'red' as ColorVariant
     },
     {
       icon: Zap,
       title: 'Lightning Fast',
       description: 'Optimized performance with modern web technologies for instant results.',
-      color: 'yellow'
+      color: 'yellow' as ColorVariant
     }
   ];
 
@@ -60,33 +65,13 @@ export default function About() {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Floating background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-40 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
+      <FloatingBackground />
 
-      {/* Hero Section */}
-      <section className="relative text-center mb-20 pt-8">
-        <div className="animate-slide-up">
-          <div className="flex items-center justify-center mb-8">
-            <Sparkles className="w-8 h-8 text-purple-400 mr-3 animate-pulse-glow" />
-            <h1 className="text-6xl md:text-7xl font-black gradient-text tracking-tight">
-              About Book Explorer
-            </h1>
-            <Sparkles className="w-8 h-8 text-blue-400 ml-3 animate-pulse-glow" style={{ animationDelay: '0.5s' }} />
-          </div>
-          
-          <p className="text-xl md:text-2xl text-gray-300 mb-6 max-w-4xl mx-auto leading-relaxed">
-            Discover, explore, and connect with millions of books from around the world
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Book Explorer is your gateway to the vast universe of literature, powered by cutting-edge technology 
-            and designed for book lovers, researchers, and curious minds everywhere.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        title="About Book Explorer"
+        subtitle="Discover, explore, and connect with millions of books from around the world"
+        description="Book Explorer is your gateway to the vast universe of literature, powered by cutting-edge technology and designed for book lovers, researchers, and curious minds everywhere."
+      />
 
       {/* Mission Section */}
       <section className="mb-20 animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -178,26 +163,14 @@ export default function About() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div
+            <FeatureCard
               key={index}
-              className="glass-effect rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 group animate-slide-up"
-              style={{ animationDelay: `${0.8 + index * 0.1}s` }}
-            >
-              <div className={`
-                w-12 h-12 rounded-xl flex items-center justify-center mb-6 
-                group-hover:scale-110 transition-transform bg-gradient-to-r
-                ${feature.color === 'purple' ? 'from-purple-500 to-purple-600' :
-                  feature.color === 'blue' ? 'from-blue-500 to-blue-600' :
-                  feature.color === 'pink' ? 'from-pink-500 to-pink-600' :
-                  feature.color === 'green' ? 'from-green-500 to-green-600' :
-                  feature.color === 'red' ? 'from-red-500 to-red-600' :
-                  'from-yellow-500 to-yellow-600'}
-              `}>
-                <feature.icon className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">{feature.title}</h3>
-              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-            </div>
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              color={feature.color}
+              animationDelay={`${0.8 + index * 0.1}s`}
+            />
           ))}
         </div>
       </section>
@@ -284,29 +257,12 @@ export default function About() {
       </section>
 
       {/* Call to Action */}
-      <section className="text-center animate-slide-up" style={{ animationDelay: '1.2s' }}>
-        <div className="glass-effect rounded-3xl p-12 backdrop-blur-xl border border-white/10 shadow-glass-lg">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Explore?</h2>
-          <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join thousands of book lovers who have already discovered their next favorite read
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/"
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all duration-300 hover:scale-105 hover:shadow-neon border border-purple-500/30"
-            >
-              Start Exploring Books
-            </a>
-            <a
-              href="/contact"
-              className="px-8 py-4 glass-effect text-white rounded-xl font-semibold border border-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105"
-            >
-              Get in Touch
-            </a>
-          </div>
-        </div>
-      </section>
+      <CallToAction
+        title="Ready to Explore?"
+        description="Join thousands of book lovers who have already discovered their next favorite read"
+        primaryButton={{ text: 'Start Exploring Books', href: '/' }}
+        secondaryButton={{ text: 'Get in Touch', href: '/contact' }}
+      />
     </div>
   );
 }

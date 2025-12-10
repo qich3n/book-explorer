@@ -2,7 +2,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, MessageSquare, Send, User, BookOpen, Sparkles, Github, Twitter, Globe, Heart, Coffee, HelpCircle, Bug, Lightbulb, Star } from 'lucide-react';
+import { Mail, MessageSquare, Send, User, BookOpen, Github, Twitter, Globe, Heart, Coffee, HelpCircle, Bug, Lightbulb, Star } from 'lucide-react';
+import FloatingBackground from '@/components/FloatingBackground';
+import PageHero from '@/components/PageHero';
+import CallToAction from '@/components/CallToAction';
+import { ColorVariant, getGradientBgClasses } from '@/lib/utils/colorUtils';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -16,11 +20,11 @@ export default function Contact() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const categories = [
-    { value: 'general', label: 'General Inquiry', icon: MessageSquare, color: 'purple' },
-    { value: 'feature', label: 'Feature Request', icon: Lightbulb, color: 'yellow' },
-    { value: 'bug', label: 'Bug Report', icon: Bug, color: 'red' },
-    { value: 'help', label: 'Need Help', icon: HelpCircle, color: 'blue' },
-    { value: 'feedback', label: 'Feedback', icon: Star, color: 'green' }
+    { value: 'general', label: 'General Inquiry', icon: MessageSquare, color: 'purple' as ColorVariant },
+    { value: 'feature', label: 'Feature Request', icon: Lightbulb, color: 'yellow' as ColorVariant },
+    { value: 'bug', label: 'Bug Report', icon: Bug, color: 'red' as ColorVariant },
+    { value: 'help', label: 'Need Help', icon: HelpCircle, color: 'blue' as ColorVariant },
+    { value: 'feedback', label: 'Feedback', icon: Star, color: 'green' as ColorVariant }
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -80,32 +84,14 @@ export default function Contact() {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Floating background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-40 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
+      <FloatingBackground />
 
-      {/* Hero Section */}
-      <section className="relative text-center mb-20 pt-8">
-        <div className="animate-slide-up">
-          <div className="flex items-center justify-center mb-8">
-            <Mail className="w-8 h-8 text-purple-400 mr-3 animate-pulse-glow" />
-            <h1 className="text-6xl md:text-7xl font-black gradient-text tracking-tight">
-              Get in Touch
-            </h1>
-            <Sparkles className="w-8 h-8 text-blue-400 ml-3 animate-pulse-glow" style={{ animationDelay: '0.5s' }} />
-          </div>
-          
-          <p className="text-xl md:text-2xl text-gray-300 mb-6 max-w-4xl mx-auto leading-relaxed">
-            We&apos;d love to hear from you! Whether you have questions, feedback, or just want to say hello.
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Your input helps us make Book Explorer better for everyone in our reading community.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        title="Get in Touch"
+        subtitle="We'd love to hear from you! Whether you have questions, feedback, or just want to say hello."
+        description="Your input helps us make Book Explorer better for everyone in our reading community."
+        icon={Mail}
+      />
 
       {/* Contact Form Section */}
       <section className="mb-20 animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -161,14 +147,7 @@ export default function Contact() {
                           onChange={handleInputChange}
                           className="sr-only"
                         />
-                        <div className={`
-                          w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-r
-                          ${category.color === 'purple' ? 'from-purple-500 to-purple-600' :
-                            category.color === 'yellow' ? 'from-yellow-500 to-yellow-600' :
-                            category.color === 'red' ? 'from-red-500 to-red-600' :
-                            category.color === 'blue' ? 'from-blue-500 to-blue-600' :
-                            'from-green-500 to-green-600'}
-                        `}>
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getGradientBgClasses(category.color)}`}>
                           <category.icon className="w-4 h-4 text-white" />
                         </div>
                         <span className="text-white text-sm font-medium">{category.label}</span>
@@ -448,29 +427,12 @@ export default function Contact() {
       </section>
 
       {/* Call to Action */}
-      <section className="text-center animate-slide-up" style={{ animationDelay: '0.8s' }}>
-        <div className="glass-effect rounded-3xl p-12 backdrop-blur-xl border border-white/10 shadow-glass-lg">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Discover Amazing Books?</h2>
-          <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-            While you&apos;re here, why not explore our vast collection of books?
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/"
-              className="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all duration-300 hover:scale-105 hover:shadow-neon border border-purple-500/30"
-            >
-              Start Exploring Books
-            </a>
-            <a
-              href="/about"
-              className="px-8 py-4 glass-effect text-white rounded-xl font-semibold border border-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105"
-            >
-              Learn More About Us
-            </a>
-          </div>
-        </div>
-      </section>
+      <CallToAction
+        title="Ready to Discover Amazing Books?"
+        description="While you're here, why not explore our vast collection of books?"
+        primaryButton={{ text: 'Start Exploring Books', href: '/' }}
+        secondaryButton={{ text: 'Learn More About Us', href: '/about' }}
+      />
     </div>
   );
 }

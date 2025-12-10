@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, Filter, Calendar, SortAsc, Sparkles } from 'lucide-react';
+import { ColorVariant, getGradientBgWithOpacity, getHoverGradientBgWithOpacity, getTextColor } from '@/lib/utils/colorUtils';
 
 interface SortSelectorProps {
   onSort: (option: string) => void;
@@ -17,28 +18,28 @@ export default function SortSelector({ onSort }: SortSelectorProps) {
       label: 'Relevance',
       description: 'Best matches first',
       icon: Sparkles,
-      color: 'purple'
+      color: 'purple' as ColorVariant
     },
     {
       value: 'new',
       label: 'Newest First',
       description: 'Recently published',
       icon: Calendar,
-      color: 'blue'
+      color: 'blue' as ColorVariant
     },
     {
       value: 'old',
       label: 'Oldest First',
       description: 'Classic literature',
       icon: Calendar,
-      color: 'green'
+      color: 'green' as ColorVariant
     },
     {
       value: 'title',
       label: 'Title A-Z',
       description: 'Alphabetical order',
       icon: SortAsc,
-      color: 'pink'
+      color: 'pink' as ColorVariant
     }
   ];
 
@@ -72,21 +73,8 @@ export default function SortSelector({ onSort }: SortSelectorProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {selectedSortOption && (
-              <div className={`
-                p-1.5 rounded-lg bg-gradient-to-r 
-                ${selectedSortOption.color === 'purple' ? 'from-purple-500/20 to-purple-600/20' :
-                  selectedSortOption.color === 'blue' ? 'from-blue-500/20 to-blue-600/20' :
-                  selectedSortOption.color === 'green' ? 'from-green-500/20 to-green-600/20' :
-                  'from-pink-500/20 to-pink-600/20'}
-                border border-white/10
-              `}>
-                <selectedSortOption.icon className={`
-                  w-4 h-4
-                  ${selectedSortOption.color === 'purple' ? 'text-purple-400' :
-                    selectedSortOption.color === 'blue' ? 'text-blue-400' :
-                    selectedSortOption.color === 'green' ? 'text-green-400' :
-                    'text-pink-400'}
-                `} />
+              <div className={`p-1.5 rounded-lg ${getGradientBgWithOpacity(selectedSortOption.color)} border border-white/10`}>
+                <selectedSortOption.icon className={`w-4 h-4 ${getTextColor(selectedSortOption.color)}`} />
               </div>
             )}
             <div>
@@ -145,22 +133,8 @@ export default function SortSelector({ onSort }: SortSelectorProps) {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`
-                      p-2 rounded-lg bg-gradient-to-r transition-all duration-300
-                      ${option.color === 'purple' ? 'from-purple-500/20 to-purple-600/20 group-hover:from-purple-500/30 group-hover:to-purple-600/30' :
-                        option.color === 'blue' ? 'from-blue-500/20 to-blue-600/20 group-hover:from-blue-500/30 group-hover:to-blue-600/30' :
-                        option.color === 'green' ? 'from-green-500/20 to-green-600/20 group-hover:from-green-500/30 group-hover:to-green-600/30' :
-                        'from-pink-500/20 to-pink-600/20 group-hover:from-pink-500/30 group-hover:to-pink-600/30'}
-                      border border-white/10
-                    `}>
-                      <option.icon className={`
-                        w-4 h-4 transition-all duration-300
-                        ${option.color === 'purple' ? 'text-purple-400' :
-                          option.color === 'blue' ? 'text-blue-400' :
-                          option.color === 'green' ? 'text-green-400' :
-                          'text-pink-400'}
-                        group-hover:scale-110
-                      `} />
+                    <div className={`p-2 rounded-lg transition-all duration-300 ${getGradientBgWithOpacity(option.color)} ${getHoverGradientBgWithOpacity(option.color)} border border-white/10`}>
+                      <option.icon className={`w-4 h-4 ${getTextColor(option.color)} transition-all duration-300 group-hover:scale-110`} />
                     </div>
                     
                     <div className="flex-1">
