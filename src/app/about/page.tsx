@@ -14,39 +14,39 @@ export default function About() {
       icon: Search,
       title: 'Intelligent Search',
       description: 'Powered by Open Library\'s extensive database with smart filtering and sorting capabilities.',
-      color: 'purple' as ColorVariant
+      color: 'purple'
     },
     {
       icon: BookOpen,
       title: 'Comprehensive Database',
       description: 'Access to millions of books, from classics to contemporary works across all genres.',
-      color: 'blue' as ColorVariant
+      color: 'blue'
     },
     {
       icon: Star,
       title: 'Enhanced Details',
       description: 'Rich book information including descriptions, subjects, and publication details.',
-      color: 'pink' as ColorVariant
+      color: 'pink'
     },
     {
       icon: Globe,
       title: 'Global Coverage',
       description: 'Books from publishers worldwide with multiple language support.',
-      color: 'green' as ColorVariant
+      color: 'green'
     },
     {
       icon: Heart,
       title: 'Personal Collections',
       description: 'Save your favorite books and build your personal reading lists.',
-      color: 'red' as ColorVariant
+      color: 'red'
     },
     {
       icon: Zap,
       title: 'Lightning Fast',
       description: 'Optimized performance with modern web technologies for instant results.',
-      color: 'yellow' as ColorVariant
+      color: 'yellow'
     }
-  ];
+  ] as const;
 
   const stats = [
     { value: '20M+', label: 'Books Available', icon: BookOpen },

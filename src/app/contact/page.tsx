@@ -20,12 +20,12 @@ export default function Contact() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const categories = [
-    { value: 'general', label: 'General Inquiry', icon: MessageSquare, color: 'purple' as ColorVariant },
-    { value: 'feature', label: 'Feature Request', icon: Lightbulb, color: 'yellow' as ColorVariant },
-    { value: 'bug', label: 'Bug Report', icon: Bug, color: 'red' as ColorVariant },
-    { value: 'help', label: 'Need Help', icon: HelpCircle, color: 'blue' as ColorVariant },
-    { value: 'feedback', label: 'Feedback', icon: Star, color: 'green' as ColorVariant }
-  ];
+    { value: 'general', label: 'General Inquiry', icon: MessageSquare, color: 'purple' },
+    { value: 'feature', label: 'Feature Request', icon: Lightbulb, color: 'yellow' },
+    { value: 'bug', label: 'Bug Report', icon: Bug, color: 'red' },
+    { value: 'help', label: 'Need Help', icon: HelpCircle, color: 'blue' },
+    { value: 'feedback', label: 'Feedback', icon: Star, color: 'green' }
+  ] as const;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({

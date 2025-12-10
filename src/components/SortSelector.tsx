@@ -18,30 +18,30 @@ export default function SortSelector({ onSort }: SortSelectorProps) {
       label: 'Relevance',
       description: 'Best matches first',
       icon: Sparkles,
-      color: 'purple' as ColorVariant
+      color: 'purple'
     },
     {
       value: 'new',
       label: 'Newest First',
       description: 'Recently published',
       icon: Calendar,
-      color: 'blue' as ColorVariant
+      color: 'blue'
     },
     {
       value: 'old',
       label: 'Oldest First',
       description: 'Classic literature',
       icon: Calendar,
-      color: 'green' as ColorVariant
+      color: 'green'
     },
     {
       value: 'title',
       label: 'Title A-Z',
       description: 'Alphabetical order',
       icon: SortAsc,
-      color: 'pink' as ColorVariant
+      color: 'pink'
     }
-  ];
+  ] as const;
 
   const handleOptionSelect = (option: string) => {
     setSelectedOption(option);
