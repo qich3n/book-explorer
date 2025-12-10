@@ -22,37 +22,34 @@ export function getGradientBgClasses(color: ColorVariant): string {
 }
 
 /**
- * Returns the appropriate gradient background classes with opacity for a given color
+ * Helper function to generate gradient classes with opacity
  */
-export function getGradientBgWithOpacity(color: ColorVariant, opacity: string = '20'): string {
+function generateGradientWithOpacity(color: ColorVariant, opacity: number, prefix: string = ''): string {
   const gradients: Record<ColorVariant, string> = {
-    purple: `from-purple-500/${opacity} to-purple-600/${opacity}`,
-    blue: `from-blue-500/${opacity} to-blue-600/${opacity}`,
-    pink: `from-pink-500/${opacity} to-pink-600/${opacity}`,
-    green: `from-green-500/${opacity} to-green-600/${opacity}`,
-    red: `from-red-500/${opacity} to-red-600/${opacity}`,
-    yellow: `from-yellow-500/${opacity} to-yellow-600/${opacity}`,
-    gray: `from-gray-500/${opacity} to-gray-600/${opacity}`
+    purple: `${prefix}from-purple-500/${opacity} ${prefix}to-purple-600/${opacity}`,
+    blue: `${prefix}from-blue-500/${opacity} ${prefix}to-blue-600/${opacity}`,
+    pink: `${prefix}from-pink-500/${opacity} ${prefix}to-pink-600/${opacity}`,
+    green: `${prefix}from-green-500/${opacity} ${prefix}to-green-600/${opacity}`,
+    red: `${prefix}from-red-500/${opacity} ${prefix}to-red-600/${opacity}`,
+    yellow: `${prefix}from-yellow-500/${opacity} ${prefix}to-yellow-600/${opacity}`,
+    gray: `${prefix}from-gray-500/${opacity} ${prefix}to-gray-600/${opacity}`
   };
   
-  return `bg-gradient-to-r ${gradients[color]}`;
+  return gradients[color];
+}
+
+/**
+ * Returns the appropriate gradient background classes with opacity for a given color
+ */
+export function getGradientBgWithOpacity(color: ColorVariant, opacity: number = 20): string {
+  return `bg-gradient-to-r ${generateGradientWithOpacity(color, opacity)}`;
 }
 
 /**
  * Returns the appropriate hover gradient background classes with opacity for a given color
  */
-export function getHoverGradientBgWithOpacity(color: ColorVariant, opacity: string = '30'): string {
-  const gradients: Record<ColorVariant, string> = {
-    purple: `hover:from-purple-500/${opacity} hover:to-purple-600/${opacity}`,
-    blue: `hover:from-blue-500/${opacity} hover:to-blue-600/${opacity}`,
-    pink: `hover:from-pink-500/${opacity} hover:to-pink-600/${opacity}`,
-    green: `hover:from-green-500/${opacity} hover:to-green-600/${opacity}`,
-    red: `hover:from-red-500/${opacity} hover:to-red-600/${opacity}`,
-    yellow: `hover:from-yellow-500/${opacity} hover:to-yellow-600/${opacity}`,
-    gray: `hover:from-gray-500/${opacity} hover:to-gray-600/${opacity}`
-  };
-  
-  return gradients[color];
+export function getHoverGradientBgWithOpacity(color: ColorVariant, opacity: number = 30): string {
+  return generateGradientWithOpacity(color, opacity, 'hover:');
 }
 
 /**
