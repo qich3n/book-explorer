@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SearchBar from '@/components/SearchBar';
 import BookList from '@/components/BookList';
 import SortSelector from '@/components/SortSelector';
+import ScrollToTop from '@/components/ScrollToTop';
+import KeyboardShortcuts from '@/components/KeyboardShortcuts';
 import { Sparkles, BookOpen, Search } from 'lucide-react';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('relevance');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Check for search parameter in URL on component mount
   useEffect(() => {
@@ -23,8 +26,32 @@ export default function Home() {
     }
   }, []);
 
+  // Focus search input handler
+  const handleFocusSearch = () => {
+    const searchInput = document.querySelector('input[placeholder*="Search for books"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  // Scroll handlers
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleScrollToBottom = () => {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+  };
+
   return (
     <main className="relative overflow-hidden">
+      {/* Keyboard Shortcuts */}
+      <KeyboardShortcuts
+        onSearchFocus={handleFocusSearch}
+        onScrollToTop={handleScrollToTop}
+        onScrollToBottom={handleScrollToBottom}
+      />
       {/* Floating background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-float"></div>
@@ -157,6 +184,9 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
     </main>
   );
 }

@@ -235,7 +235,14 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
               placeholder="Search for books, authors, or subjects..."
               className="w-full h-14 pl-12 pr-16 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg font-medium transition-all duration-300 relative z-10"
               minLength={1}
+              aria-label="Search for books, authors, or subjects"
+              aria-describedby="search-hint"
+              autoComplete="off"
+              spellCheck="false"
             />
+            <span id="search-hint" className="sr-only">
+              Press Cmd+K or Ctrl+K to focus search. Search automatically as you type.
+            </span>
 
             {/* Clear button */}
             {query && (

@@ -194,7 +194,7 @@ export default function BookCard({
   const purchaseLinks = generatePurchaseLinks(title, author, details.isbn?.[0]);
 
   return (
-    <div
+    <article
       className={`
         group relative bg-white/5 backdrop-blur-sm rounded-2xl 
         border border-white/10 shadow-glass overflow-hidden
@@ -204,6 +204,7 @@ export default function BookCard({
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      aria-label={`Book: ${title}${author && author.length > 0 ? ` by ${author.join(', ')}` : ''}`}
     >
       {/* Glow effect on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -222,6 +223,8 @@ export default function BookCard({
             <img
               src={coverUrl}
               alt={`Cover of ${title}`}
+              loading="lazy"
+              decoding="async"
               className={`
                 absolute inset-0 w-full h-full object-cover
                 transition-all duration-700 group-hover:scale-110
@@ -541,6 +544,6 @@ export default function BookCard({
           </div>
         </div>
       )}
-    </div>
+    </article>
   );
 }
